@@ -17,6 +17,7 @@ package com.example.cupcake
 
 import android.content.Context
 import android.content.Intent
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -40,6 +41,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.cupcake.data.DataSource
 import com.example.cupcake.ui.OrderSummaryScreen
@@ -48,11 +50,11 @@ import com.example.cupcake.ui.SelectOptionScreen
 import com.example.cupcake.ui.StartOrderScreen
 
 
-enum class CupcakeScreen() {
-    Start,
-    Flavor,
-    Pickup,
-    Summary
+enum class CupcakeScreen(@StringRes val title : Int) {
+    Start(title = R.string.app_name),
+    Flavor(title = R.string.choose_flavor),
+    Pickup(title = R.string.choose_pickup_date),
+    Summary(title = R.string.order_summary)
 }
 
 
@@ -61,12 +63,13 @@ enum class CupcakeScreen() {
  */
 @Composable
 fun CupcakeAppBar(
+    currentScreen: CupcakeScreen,
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
-        title = { Text(stringResource(id = R.string.app_name)) },
+        title = { Text(stringResource(currentScreen.title)) },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         ),
@@ -89,12 +92,35 @@ fun CupcakeApp(
     viewModel: OrderViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
+    // Gets current backstack entry
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    //Get name of the current screen
+    val currentScreen = CupcakeScreen.valueOf(backStackEntry?.destination?.route?: CupcakeScreen.Start.name)
+    /*
+    Breaking It Down:
+backStackEntry?.destination?.route
+
+backStackEntry holds the current screen's navigation entry.
+
+destination?.route retrieves the route name of the current screen.
+
+If backStackEntry is null, it means the app is at the start screen.
+
+?: CupcakeScreen.Start.name (Elvis Operator)
+
+If destination?.route is null, it defaults to "Start" (the first screen).
+
+CupcakeScreen.valueOf(...)
+
+Converts the route string into an enum value (CupcakeScreen).
+     */
 
     Scaffold(
         topBar = {
             CupcakeAppBar(
-                canNavigateBack = false,
-                navigateUp = { /* TODO: implement back navigation */ }
+                currentScreen = currentScreen,
+                canNavigateBack = navController.previousBackStackEntry != null,
+                navigateUp = { navController.navigateUp() }
             )
         }
     ) { innerPadding ->
