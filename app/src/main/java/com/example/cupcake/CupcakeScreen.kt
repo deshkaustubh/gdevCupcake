@@ -219,4 +219,26 @@ private fun cancelOrderAndNavigateToStart(
 ) {
     viewModel.resetOrder() // The function resetOrder() in the ViewModel is used to clear the current order state and reset it to its initial values.
     navController.popBackStack(CupcakeScreen.Start.name, false)
+    /*
+    Breaking It Down:
+        navController.popBackStack(destination, inclusive)
+
+        destination: The screen to navigate back to (CupcakeScreen.Start.name).
+
+        inclusive: If true, it removes the destination itself. If false, it keeps the destination and removes everything above it.
+
+        CupcakeScreen.Start.name
+
+        This is the route name of the Start screen.
+
+        It ensures the app returns to the beginning of the order flow.
+
+        false (Inclusive Parameter)
+
+        Keeps the Start screen in the back stack.
+
+        Removes all screens above the Start screen (Entree, Side Dish, Accompaniment, Checkout).
+
+        Prevents users from pressing "Back" and returning to an old order screen.
+     */
 }
